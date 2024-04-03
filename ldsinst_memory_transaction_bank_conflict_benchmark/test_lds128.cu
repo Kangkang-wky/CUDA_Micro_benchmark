@@ -55,6 +55,13 @@ __global__ void smem_4(uint32_t *a) {
       reinterpret_cast<const uint4 *>(smem)[addr];
 }
 
+// 注意 smem_5
+// thread 0 - 3 访问第 0 个 uint4， thread 4 - 7 访问第 8 个 uint4（到了第二行）;
+// thread 8 - 11 访问第 1 个 uint4， thread 12 - 15 访问第 9 个 uint4（到了第二行）;
+
+// 这里符合合并条件 1, 所以前两个和后两个 quarter warp 分别合并。但是每个 half warp 内，产生了 2-way bank conflict，所以需要拆成 2 次 transaction。
+// 即一共 2 个 bank conflict， 4 次 transaction.
+
 __global__ void smem_5(uint32_t *a) {
   __shared__ uint32_t smem[128];
   uint32_t tid = threadIdx.x;
@@ -66,6 +73,7 @@ __global__ void smem_5(uint32_t *a) {
       reinterpret_cast<const uint4 *>(smem)[(tid / 16) * 4 + (tid % 16) / 8 + (tid % 8) / 4 * 8];
 }
 
+// 前两个 quarter warp 与 后两个 quarter warp 的行为不一致
 __global__ void smem_6(uint32_t *a) {
   __shared__ uint32_t smem[128];
   uint32_t tid = threadIdx.x;

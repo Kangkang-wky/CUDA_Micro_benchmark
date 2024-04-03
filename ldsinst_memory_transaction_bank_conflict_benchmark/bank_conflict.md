@@ -1,4 +1,8 @@
-# bank conflict 
+# lds & memory transaction & bank conflict 
+
+## 简介
+
+一直以来对 lds 向量指令, memory transaction 以及它的广播机制比较困惑 
 
 ## shared memory 认识
 
@@ -38,15 +42,34 @@
 对于 Warp 内所有活跃的第 i 号线程, 第 i xor 2 号线程不活跃或者访存地址和其一致;
 (i.e. T0==T2, T1==T3, T4==T6, T5==T7 etc.)
 
-micro_benchmark 测试, 具体可以看 png 中的 5 个 cases
+为什么呢?? 
+
+简单理解一下，当上面两种情况发生时，硬件就可以判断(具体是硬件还是编译器的功劳，我也不确定，先归给硬件吧), 单个 half warp 内，最多需要 64 bytes 的数据，那么两个 half warp 就可以合并起来，通过一次 memory transaction，拿回 128 bytes 的数据. 然后线程之间怎么分都可以(broadcast 机制).
+
+当然，这里的前提是没有产生 bank conflict。即没有从单个 bank 请求超过 1 个 word. 
+
+
+注意！！
+
+其实 bank conflict 是针对单次 memory transaction 而言的。如果单次 memory transaction 需要访问的 128 bytes 中有多个 word 属于同一个 bank，就产生了 bank conflict，从而需要拆分为多次 transaction。
+
+比如这里，第一次访问了 0 - 31 个 word，第二次访问了 32 - 63 个 word，每次 transaction 内部并没有 bank conflict
+
+
+
+micro_benchmark 测试, 具体可以看 png 中的 6 个 cases
 
 ### 128bit 访问
+
+以下 quarter warp 的称呼并没有在 官方文档 中出现过.
 
 使用 LDS.128 指令(或者通过 float4、uint4 等类型) 取数据时, 每个 thread 请求 128 bits(即 16 bytes) 数据，那么每 8 个 thread 就需要请求 128 bytes 的数据. 
 
 所以，CUDA 会默认把每个 half warp 进一步切分成两个 quarter warp, 每个包含 8 个 thread. 每个 quarter warp 产生一次 memory transaction。所以每个 warp 每次请求，默认会有 4 次 memory transaction. （没有 bank conflict 的情况下).
 
+
 类似 64 位宽的情况, 当满足特定条件时, 一个 half warp 内的两个 quarter warp 的访存请求会合并为 1 次 memory transaction. 但是两个 half warp 不会再进一步合并了.
+
 
 对于 Warp 内所有活跃的第 i 号线程，第 i xor 1 号线程不活跃或者访存地址和其一致；(i.e. T0==T1, T2==T3, T4==T5, T6==T7, T8 == T9, ......, T30 == T31, etc.)
 对于 Warp 内所有活跃的第 i 号线程，第 i xor 2 号线程不活跃或者访存地址和其一致；(i.e. T0==T2, T1==T3, T4==T6, T5==T7 etc.)
