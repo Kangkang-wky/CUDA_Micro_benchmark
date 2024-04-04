@@ -2,7 +2,10 @@
 
 ## 简介
 
-一直以来对 lds 向量指令, memory transaction 以及它的广播机制比较困惑 
+对于正常的 lds sts 指令, bank conflict 发生情况以及对 shared memory 广播机制, 在 guide programming book 中有详细的介绍与举例
+
+但是对于 lds64, lds128 这种向量化访存指令, memory transaction 以及 shared memory 上的广播机制比较模糊,
+通过参看博客中推荐的 micro benchmark 进行分析和测试
 
 ## shared memory 认识
 
