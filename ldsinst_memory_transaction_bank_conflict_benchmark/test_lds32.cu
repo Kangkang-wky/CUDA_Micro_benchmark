@@ -22,7 +22,7 @@ __global__ void smem_2(uint32_t *a) {
   a[tid] = smem[tid + 1];
 }
 
-// 此时触发广播机制 
+// 此时触发广播机制
 __global__ void smem_3(uint32_t *a) {
   __shared__ uint32_t smem[128];
   uint32_t tid = threadIdx.x;
@@ -32,7 +32,6 @@ __global__ void smem_3(uint32_t *a) {
   __syncthreads();
   a[tid] = smem[tid / 2];
 }
-
 
 __global__ void smem_4(uint32_t *a) {
   __shared__ uint32_t smem[128];
@@ -66,8 +65,7 @@ __global__ void smem_6(uint32_t *a) {
   int addr;
   if (tid < 16) {
     addr = tid;
-  }
-  else{
+  } else {
     addr = tid + 32;
   }
   a[tid] = smem[addr];
@@ -83,8 +81,7 @@ __global__ void smem_7(uint32_t *a) {
   int addr;
   if (tid < 16) {
     addr = tid * 2 + 1;
-  }
-  else {
+  } else {
     addr = tid * 2;
   }
 

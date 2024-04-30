@@ -86,6 +86,7 @@ __global__ void smem_5(uint32_t *a) {
       reinterpret_cast<const uint2 *>(smem)[tid % 16];
 }
 
+
 int main() {
   uint32_t *d_a;
   cudaMalloc(&d_a, sizeof(uint32_t) * 128);
