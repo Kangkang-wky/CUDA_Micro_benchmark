@@ -78,6 +78,14 @@ micro_benchmark 测试, 具体可以看 png 中的 6 个 cases
 对于 Warp 内所有活跃的第 i 号线程，第 i xor 2 号线程不活跃或者访存地址和其一致；(i.e. T0==T2, T1==T3, T4==T6, T5==T7 etc.)
 (活跃是指有访存需求)
 
+## 总结
+
+从 Nvidia forums 得到的确认, bank conflict, 决定存储体竞争的本质是内存事务的数量，但话又说回来，有 bank conflict 情况发生的肯定是不在一个内存事务中
+
+存储体竞争问题, 核心在于用满每个 cycle 下的 shared memory 有效带宽
+
+ The determination of bank conflicts is made per transaction, not per request or per warp or per instruction.
+
 
 
 ## 参考
