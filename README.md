@@ -15,4 +15,5 @@ Record micro benchmark for CUDA GPU
 - compute_latency 
     - FMA
     - TENSORCORE
-        - HMMA 
+        - HMMA16816
+        
